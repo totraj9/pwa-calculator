@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PWA Calculator</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 60px;
+      background: #f2f2f2;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      margin: auto;
+      width: 260px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 90%;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <h2>Add Two Numbers</h2>
+
+    <input type="number" id="a" placeholder="Number 1">
+    <input type="number" id="b" placeholder="Number 2">
+
+    <button onclick="add()">Add</button>
+
+    <h3 id="result">Result: 0</h3>
+  </div>
+
+  <script>
+    function add() {
+      const a = Number(document.getElementById("a").value);
+      const b = Number(document.getElementById("b").value);
+      document.getElementById("result").innerText = "Result: " + (a + b);
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
