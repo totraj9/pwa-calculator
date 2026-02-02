@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PWA Calculator</title>
+  <title>LED Control</title>
 
   <link rel="manifest" href="manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,59 +10,105 @@
   <style>
     body {
       font-family: Arial;
-      text-align: center;
-      margin-top: 60px;
       background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
-    .box {
+
+    .card {
       background: white;
+      width: 280px;
       padding: 20px;
-      margin: auto;
-      width: 260px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-    input {
-      width: 90%;
-      padding: 8px;
-      margin: 8px 0;
-      font-size: 16px;
+
+    h2 {
+      margin-bottom: 10px;
     }
+
+    .status {
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    .on {
+      color: green;
+    }
+
+    .off {
+      color: red;
+    }
+
     button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
+      margin: 8px 0;
       font-size: 16px;
-      background: #007bff;
-      color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-on {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-off {
+      background: #dc3545;
+      color: white;
+    }
+
+    input[type=range] {
+      width: 100%;
+      margin-top: 10px;
     }
   </style>
 </head>
 
 <body>
-  <div class="box">
-    <h2>Add Two Numbers</h2>
 
-    <input type="number" id="a" placeholder="Number 1">
-    <input type="number" id="b" placeholder="Number 2">
+<div class="card">
+  <h2>LED Control</h2>
 
-    <button onclick="add()">Add</button>
+  <div id="status" class="status off">LED OFF</div>
 
-    <h3 id="result">Result: 0</h3>
-  </div>
+  <button class="btn-on" onclick="ledOn()">LED ON</button>
+  <button class="btn-off" onclick="ledOff()">LED OFF</button>
 
-  <script>
-    function add() {
-      const a = Number(document.getElementById("a").value);
-      const b = Number(document.getElementById("b").value);
-      document.getElementById("result").innerText = "Result: " + (a + b);
-    }
+  <p>Brightness</p>
+  <input type="range" min="0" max="100" value="50" oninput="setBrightness(this.value)">
+  <p id="brightnessValue">50%</p>
+</div>
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-  </script>
+<script>
+  function ledOn() {
+    document.getElementById("status").innerText = "LED ON";
+    document.getElementById("status").className = "status on";
+
+    console.log("LED ON command");
+  }
+
+  function ledOff() {
+    document.getElementById("status").innerText = "LED OFF";
+    document.getElementById("status").className = "status off";
+
+    console.log("LED OFF command");
+  }
+
+  function setBrightness(val) {
+    document.getElementById("brightnessValue").innerText = val + "%";
+    console.log("Brightness:", val);
+  }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+
 </body>
 </html>
-
