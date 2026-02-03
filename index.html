@@ -104,9 +104,34 @@
     Mixing OFF – Manual Control
   </div>
 </div>
-
 <script>
   let mixingEnabled = false;
+
+  const API_URL = "https://your-backend-domain.com/api/led/tunable";
+  // later: replace with real backend URL
+
+  function sendToBackend(cool, warm) {
+    const payload = {
+      mixing: mixingEnabled,
+      cool: Number(cool),
+      warm: Number(warm)
+    };
+
+    fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Backend ACK:", data);
+    })
+    .catch(err => {
+      console.error("API error:", err);
+    });
+  }
 
   function toggleMixing() {
     mixingEnabled = document.getElementById("mixToggle").checked;
@@ -118,12 +143,16 @@
     document.getElementById("status").innerText =
       mixingEnabled ? "Mixing ON – Master Control"
                     : "Mixing OFF – Manual Control";
+
+    sendToBackend(
+      document.getElementById("coolSlider").value,
+      document.getElementById("warmSlider").value
+    );
   }
 
   function setMasterMix(val) {
     document.getElementById("masterValue").innerText = val + "%";
 
-    // Simple linear mixing
     let cool = 100 - val;
     let warm = val;
 
@@ -133,17 +162,17 @@
     document.getElementById("coolValue").innerText = cool + "%";
     document.getElementById("warmValue").innerText = warm + "%";
 
-    console.log("MASTER MIX → Cool:", cool, "Warm:", warm);
+    sendToBackend(cool, warm);
   }
 
   function setCool(val) {
     document.getElementById("coolValue").innerText = val + "%";
-    console.log("Cool White:", val);
+    sendToBackend(val, document.getElementById("warmSlider").value);
   }
 
   function setWarm(val) {
     document.getElementById("warmValue").innerText = val + "%";
-    console.log("Warm White:", val);
+    sendToBackend(document.getElementById("coolSlider").value, val);
   }
 
   if ('serviceWorker' in navigator) {
