@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>LED Control</title>
+  <title>Tunable White LED</title>
 
   <link rel="manifest" href="manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,53 +19,45 @@
 
     .card {
       background: white;
-      width: 280px;
+      width: 300px;
       padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      border-radius: 14px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.15);
     }
 
     h2 {
+      text-align: center;
       margin-bottom: 10px;
     }
 
-    .status {
-      margin: 10px 0;
+    .section {
+      margin-top: 15px;
+    }
+
+    .label {
       font-weight: bold;
-    }
-
-    .on {
-      color: green;
-    }
-
-    .off {
-      color: red;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .btn-on {
-      background: #28a745;
-      color: white;
-    }
-
-    .btn-off {
-      background: #dc3545;
-      color: white;
+      margin-bottom: 5px;
     }
 
     input[type=range] {
       width: 100%;
+    }
+
+    .value {
+      text-align: right;
+      font-size: 14px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status {
+      text-align: center;
       margin-top: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -73,36 +65,85 @@
 <body>
 
 <div class="card">
-  <h2>LED Control</h2>
+  <h2>Tunable White</h2>
 
-  <div id="status" class="status off">LED OFF</div>
+  <!-- Mixing Toggle -->
+  <div class="section toggle">
+    <span>Color Mixing</span>
+    <input type="checkbox" id="mixToggle" onchange="toggleMixing()">
+  </div>
 
-  <button class="btn-on" onclick="ledOn()">LED ON</button>
-  <button class="btn-off" onclick="ledOff()">LED OFF</button>
+  <!-- Master Slider -->
+  <div class="section">
+    <div class="label">Master Color (Cool ⇄ Warm)</div>
+    <input type="range" min="0" max="100" value="50"
+           id="masterSlider" disabled
+           oninput="setMasterMix(this.value)">
+    <div class="value" id="masterValue">50%</div>
+  </div>
 
-  <p>Brightness</p>
-  <input type="range" min="0" max="100" value="50" oninput="setBrightness(this.value)">
-  <p id="brightnessValue">50%</p>
+  <!-- Cool White -->
+  <div class="section">
+    <div class="label">Cool White</div>
+    <input type="range" min="0" max="100" value="50"
+           id="coolSlider"
+           oninput="setCool(this.value)">
+    <div class="value" id="coolValue">50%</div>
+  </div>
+
+  <!-- Warm White -->
+  <div class="section">
+    <div class="label">Warm White</div>
+    <input type="range" min="0" max="100" value="50"
+           id="warmSlider"
+           oninput="setWarm(this.value)">
+    <div class="value" id="warmValue">50%</div>
+  </div>
+
+  <div class="status" id="status">
+    Mixing OFF – Manual Control
+  </div>
 </div>
 
 <script>
-  function ledOn() {
-    document.getElementById("status").innerText = "LED ON";
-    document.getElementById("status").className = "status on";
+  let mixingEnabled = false;
 
-    console.log("LED ON command");
+  function toggleMixing() {
+    mixingEnabled = document.getElementById("mixToggle").checked;
+
+    document.getElementById("masterSlider").disabled = !mixingEnabled;
+    document.getElementById("coolSlider").disabled = mixingEnabled;
+    document.getElementById("warmSlider").disabled = mixingEnabled;
+
+    document.getElementById("status").innerText =
+      mixingEnabled ? "Mixing ON – Master Control"
+                    : "Mixing OFF – Manual Control";
   }
 
-  function ledOff() {
-    document.getElementById("status").innerText = "LED OFF";
-    document.getElementById("status").className = "status off";
+  function setMasterMix(val) {
+    document.getElementById("masterValue").innerText = val + "%";
 
-    console.log("LED OFF command");
+    // Simple linear mixing
+    let cool = 100 - val;
+    let warm = val;
+
+    document.getElementById("coolSlider").value = cool;
+    document.getElementById("warmSlider").value = warm;
+
+    document.getElementById("coolValue").innerText = cool + "%";
+    document.getElementById("warmValue").innerText = warm + "%";
+
+    console.log("MASTER MIX → Cool:", cool, "Warm:", warm);
   }
 
-  function setBrightness(val) {
-    document.getElementById("brightnessValue").innerText = val + "%";
-    console.log("Brightness:", val);
+  function setCool(val) {
+    document.getElementById("coolValue").innerText = val + "%";
+    console.log("Cool White:", val);
+  }
+
+  function setWarm(val) {
+    document.getElementById("warmValue").innerText = val + "%";
+    console.log("Warm White:", val);
   }
 
   if ('serviceWorker' in navigator) {
