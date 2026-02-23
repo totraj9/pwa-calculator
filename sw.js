@@ -1,20 +1,18 @@
-const CACHE_NAME = "pwa-calculator-v1";
-const urlsToCache = [
-  "./",
-  "./index.html",
-  "./manifest.json"
-];
-
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open('led-cache').then(function(cache) {
+      return cache.addAll([
+        'index.html',
+        'manifest.json'
+      ]);
+    })
   );
 });
 
-self.addEventListener("fetch", event => {
+self.addEventListener('fetch', function(event) {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+    caches.match(event.request).then(function(response) {
+      return response || fetch(event.request);
+    })
   );
 });

@@ -1,68 +1,161 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>PWA Calculator</title>
+  <title>Tunable White Controller</title>
 
-  <link rel="manifest" href="manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.json">
 
   <style>
     body {
       font-family: Arial;
-      text-align: center;
-      margin-top: 60px;
-      background: #f2f2f2;
-    }
-    .box {
-      background: white;
-      padding: 20px;
-      margin: auto;
-      width: 260px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input {
-      width: 90%;
-      padding: 8px;
-      margin: 8px 0;
-      font-size: 16px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      background: #007bff;
+      background: #111;
       color: white;
-      border: none;
-      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: #222;
+      padding: 25px;
+      width: 320px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    input[type=range] {
+      width: 100%;
+    }
+
+    .value {
+      text-align: right;
+      font-size: 14px;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #00ffcc;
     }
   </style>
 </head>
 
 <body>
-  <div class="box">
-    <h2>Add Two Numbers</h2>
 
-    <input type="number" id="a" placeholder="Number 1">
-    <input type="number" id="b" placeholder="Number 2">
+<div class="card">
+  <h2>🌈 Tunable White</h2>
 
-    <button onclick="add()">Add</button>
-
-    <h3 id="result">Result: 0</h3>
+  <div class="section">
+    <label>
+      <input type="checkbox" id="mixToggle" onchange="toggleMixing()">
+      Enable Color Mixing
+    </label>
   </div>
 
-  <script>
-    function add() {
-      const a = Number(document.getElementById("a").value);
-      const b = Number(document.getElementById("b").value);
-      document.getElementById("result").innerText = "Result: " + (a + b);
-    }
+  <div class="section">
+    <div>Master (Cool ⇄ Warm)</div>
+    <input type="range" min="0" max="100" value="50"
+           id="masterSlider" disabled
+           oninput="setMaster(this.value)">
+    <div class="value" id="masterVal">50%</div>
+  </div>
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-  </script>
+  <div class="section">
+    <div>Cool White</div>
+    <input type="range" min="0" max="100" value="50"
+           id="coolSlider"
+           oninput="setCool(this.value)">
+    <div class="value" id="coolVal">50%</div>
+  </div>
+
+  <div class="section">
+    <div>Warm White</div>
+    <input type="range" min="0" max="100" value="50"
+           id="warmSlider"
+           oninput="setWarm(this.value)">
+    <div class="value" id="warmVal">50%</div>
+  </div>
+
+  <div class="status" id="status">
+    Manual Mode
+  </div>
+</div>
+
+<script>
+
+const ESP_IP = "http://192.168.0.200/set";   // 🔥 YOUR ESP32 FIXED IP
+
+let mixing = false;
+
+function sendToESP(cool, warm) {
+
+  fetch(`${ESP_IP}?cool=${cool}&warm=${warm}`)
+    .then(res => res.text())
+    .then(data => console.log("ESP:", data))
+    .catch(err => console.log("Error:", err));
+}
+
+function toggleMixing() {
+
+  mixing = document.getElementById("mixToggle").checked;
+
+  document.getElementById("masterSlider").disabled = !mixing;
+  document.getElementById("coolSlider").disabled = mixing;
+  document.getElementById("warmSlider").disabled = mixing;
+
+  document.getElementById("status").innerText =
+    mixing ? "Mixing Mode Active" : "Manual Mode";
+
+  sendToESP(
+    document.getElementById("coolSlider").value,
+    document.getElementById("warmSlider").value
+  );
+}
+
+function setMaster(val) {
+
+  document.getElementById("masterVal").innerText = val + "%";
+
+  let cool = 100 - val;
+  let warm = val;
+
+  document.getElementById("coolSlider").value = cool;
+  document.getElementById("warmSlider").value = warm;
+
+  document.getElementById("coolVal").innerText = cool + "%";
+  document.getElementById("warmVal").innerText = warm + "%";
+
+  sendToESP(cool, warm);
+}
+
+function setCool(val) {
+  document.getElementById("coolVal").innerText = val + "%";
+  sendToESP(val, document.getElementById("warmSlider").value);
+}
+
+function setWarm(val) {
+  document.getElementById("warmVal").innerText = val + "%";
+  sendToESP(document.getElementById("coolSlider").value, val);
+}
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+
+</script>
+
 </body>
 </html>
-
